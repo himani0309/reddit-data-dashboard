@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 st.title("📊 Reddit Digital Currency Dashboard")
 
 # Load CSV
-df = pd.read_csv("output_filtered.csv")
+df = pd.read_csv("output/reddit/output_processed.csv")
 df['post_date'] = pd.to_datetime(df['post_date'], errors='coerce')
 df['post_month'] = df['post_date'].dt.to_period('M')
 
