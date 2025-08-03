@@ -13,8 +13,8 @@ A Streamlit-powered dashboard to explore Reddit post data, sentiment trends, and
 
 ## 📁 Files
 
-- `1.py` – Main Streamlit app
-- `Expanded_Fake_Reddit_Posts.csv` – Input dataset
+- `app.py` – Main Streamlit app
+- `output_filtered.csv` – Input dataset
 - `requirements.txt` – Python dependencies
 
 ## 🚀 Live App
@@ -25,4 +25,4 @@ A Streamlit-powered dashboard to explore Reddit post data, sentiment trends, and
 
 ```bash
 pip install -r requirements.txt
-streamlit run 1.py
+streamlit run app.py
