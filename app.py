@@ -14,15 +14,13 @@ df = pd.read_csv("output/reddit/output_processed.csv")
 df['post_date'] = pd.to_datetime(df['post_date'], errors='coerce')
 df['post_month'] = df['post_date'].dt.to_period('M')
 
-# Fix column names
+# Rename columns for consistency
 df.rename(columns={
     'post_upvotes': 'post_upvote',
     'total_comments': 'post_total_comments'
 }, inplace=True)
 
 comment_cols = [f'comment_{i}_summary' for i in range(1, 6)]
-
-# --------------------- PLOTS ---------------------
 
 # 1. Post Upvotes Over Time
 st.subheader("1. 📈 Post Upvotes Over Time")
@@ -70,14 +68,16 @@ ax6.imshow(wordcloud, interpolation='bilinear')
 ax6.axis('off')
 st.pyplot(fig6)
 
-# 7. Word Cloud from Comments
-st.subheader("7. 📝 Top Words in Comments")
-all_comments = df[comment_cols].fillna("").apply(lambda x: " ".join(x), axis=1)
-comment_wordcloud = WordCloud(width=800, height=400, background_color='black').generate(" ".join(all_comments))
-fig7, ax7 = plt.subplots(figsize=(10, 5))
-ax7.imshow(comment_wordcloud, interpolation='bilinear')
-ax7.axis('off')
-st.pyplot(fig7)
+
+# 7. Top 10 Posts Mentioning Misinformation
+st.subheader("7. ❗ Top 10 Posts Flagged as Misinformation")
+mis_keywords = ['fake', 'misinformation', 'false', 'wrong']
+df['post_misinfo_flag'] = df['post_summary'].str.lower().apply(lambda x: any(k in x for k in mis_keywords))
+top_misinfo_posts = df[df['post_misinfo_flag']].sort_values('post_upvote', ascending=False).head(10)
+fig14, ax14 = plt.subplots(figsize=(8, 4))
+sns.barplot(y='post_summary', x='post_upvote', data=top_misinfo_posts, ax=ax14, color='red')
+ax14.set_xlabel("Upvotes")
+st.pyplot(fig14)
 
 # 8. Distribution of Post Length
 st.subheader("8. 📏 Distribution of Post Summary Length")
@@ -86,7 +86,7 @@ fig8, ax8 = plt.subplots(figsize=(8, 4))
 sns.histplot(df['post_length'], bins=30, ax=ax8, color='brown')
 st.pyplot(fig8)
 
-# 9. 🥧 Post Theme Distribution (Keyword Extracted Pie)
+# 9. 🥧 Post Theme Distribution
 st.subheader("9. 🥧 Post Theme Distribution")
 theme_labels = ['positive', 'negative', 'neutral']
 df['theme'] = df['post_summary'].str.lower().apply(lambda x: next((k for k in theme_labels if k in x), 'unknown'))
@@ -106,9 +106,10 @@ ax10.set_xticklabels(['Matched', 'Not Matched'], rotation=0)
 ax10.set_ylabel("Percentage")
 st.pyplot(fig10)
 
-# 11. Comment Sentiment Count (Keywords)
+# 11. Comment Sentiment Count
 st.subheader("11. 🧠 Comment Sentiment Keywords")
 sentiment_terms = ['fake', 'misinfo', 'truth', 'neutral']
+all_comments = df[comment_cols].fillna("").apply(lambda x: " ".join(x), axis=1)
 comment_all_text = all_comments.str.lower()
 sentiment_counts = {term: comment_all_text.str.contains(term).sum() for term in sentiment_terms}
 fig11, ax11 = plt.subplots(figsize=(8, 4))
@@ -123,10 +124,11 @@ theme_monthly.plot(ax=ax12)
 ax12.set_ylabel("Number of Posts")
 st.pyplot(fig12)
 
-# 13. Top Controversial Posts (Upvotes + Comments)
+# 13. Top Controversial Posts
 st.subheader("13. 🔥 Top 10 Controversial Posts")
 df['controversy_score'] = df['post_upvote'] + df['post_total_comments']
 top_contro = df.sort_values('controversy_score', ascending=False).head(10)
 fig13, ax13 = plt.subplots(figsize=(8, 4))
 sns.barplot(y='post_summary', x='controversy_score', data=top_contro, ax=ax13, palette='rocket')
 st.pyplot(fig13)
+
